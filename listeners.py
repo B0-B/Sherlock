@@ -560,6 +560,12 @@ class PrivateNetworkListener ():
         self.root_path = Path(__file__).resolve().parent
         self.log_path = self.root_path.joinpath('logs/devices.log')
         self.mac_path = self.root_path.joinpath('cache/mac.json')
+
+        # init cache, if none exists create it
+        for path in [self.mac_path]:
+            if not path.exists():
+                with open(self.mac_path, 'w+') as f:
+                    json.dump({}, f)
         
         # Initialize network scanner.
         self.scanner = NetworkScanner()
@@ -731,6 +737,11 @@ class DnsEndPoint:
         self.root_path = Path(__file__).resolve().parent
         self.log_path = self.root_path.joinpath('logs/network.log')
         self.dns_path = self.root_path.joinpath('cache/dns.json')
+
+        for path in [self.log_path, self.dns_path]:
+            if not path.exists():
+                with open(path, 'w+') as f:
+                    f.write("{}")
 
         # dns lookup
         self.local_domains = ['127.0.0.1']
