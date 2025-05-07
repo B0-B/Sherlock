@@ -738,7 +738,7 @@ class DnsEndPoint:
         self.log_path = self.root_path.joinpath('logs/network.log')
         self.dns_path = self.root_path.joinpath('cache/dns.json')
 
-        for path in [self.log_path, self.dns_path]:
+        for path in [self.dns_path]:
             if not path.exists():
                 with open(path, 'w+') as f:
                     f.write("{}")

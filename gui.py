@@ -148,7 +148,7 @@ class GUI (tk.Tk):
                 stdout_lines = listener_module.stdout[-self.stdout_lines:]
 
                 # decide how to process the stdout by label
-                if label in ['filesystem', 'network']:
+                if False and label in ['filesystem', 'network']:
 
                     # analyze line by line to insert hyperlinks
                     for line in stdout_lines:
@@ -176,7 +176,7 @@ class GUI (tk.Tk):
                     # self.insert_text(text, field)
                     # self.insert_link(link, field, self.search)
                 else:
-                    text = '\n'.join(listener_module.stdout[-self.stdout_lines:])
+                    text = '\n'.join(listener_module.stdout[-self.stdout_lines:]) + '\n'
                     self.insert_text(text, field)
         
         except:
