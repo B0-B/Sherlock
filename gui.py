@@ -44,6 +44,7 @@ class GUI (tk.Tk):
         self.stdout_foreground = '#ffffff'
         self.label_font = ('Arial', 10)
         self.stdout_font = ('Courier New', 8)
+        self.tagged = False # if to use tagged hyperlinks with color (performance reducing)
 
         # ---- Backend Parameter ----
         self.stdout_lines = 100
@@ -132,7 +133,7 @@ class GUI (tk.Tk):
     def insert_link (self, text: str, field: tk.Text, callback: Callable) -> None:
 
         field.tag_config("tag", foreground="orange")
-        field.tag_bind("tag", "<Button-1>", callback)
+        # field.tag_bind("tag", "<Button-1>", callback)
         field.insert(tk.END, text, "tag")
 
     def interface_routine (self) -> None:
@@ -142,18 +143,31 @@ class GUI (tk.Tk):
             # ---- update stdout ----
             s = ' ' # separator string
             string = ''
+
             for label, field in self.stdout_text_fields.items():
 
                 listener_module = self.listeners[label]
-                stdout_lines = listener_module.stdout[-self.stdout_lines:]
+                console = self.stdout_text_fields[label]
+                
+                # determine the new lines which have to be printed from stdout list
+                num_lines = int(console.index("end-1c").split(".")[0])  # Get last line number
+                last_line = console.get(f"{num_lines - 1}.0", f"{num_lines - 1}.end")  # Retrieve last line
+                current_lines = listener_module.stdout[-self.stdout_lines:]
+
+                i = 0
+                for i in range(1, len(current_lines)+1):
+                    if current_lines[-i] == last_line:
+                        break
+                if i == 1:
+                    continue
+                new_lines = current_lines[-(i-1):]
 
                 # decide how to process the stdout by label
-                if False and label in ['filesystem', 'network']:
+                if self.tagged and label in ['filesystem', 'network']:
 
                     # analyze line by line to insert hyperlinks
-                    for line in stdout_lines:
+                    for line in new_lines:
                         
-
                         line_list = line.split(s)
                         
                         for chunk in line_list:
@@ -169,14 +183,10 @@ class GUI (tk.Tk):
                             string = ''
                         self.insert_text('\n', field)
                             
-                    # if label == 'filesystem':
-                    #     line_list = line.split(s)
-                    #     text = s.join(line_list[:-1]) + s
-                    #     link = line_list[-1]+'\n'
-                    # self.insert_text(text, field)
-                    # self.insert_link(link, field, self.search)
                 else:
-                    text = '\n'.join(listener_module.stdout[-self.stdout_lines:]) + '\n'
+
+                    # merge all unseen lines and insert at once
+                    text = '\n'.join(new_lines) + '\n'
                     self.insert_text(text, field)
         
         except:

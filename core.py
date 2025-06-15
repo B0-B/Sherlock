@@ -2,8 +2,7 @@
 from multiprocessing import Process, Event
 from typing import Callable
 
-from listeners import *  
-from orchestrate import CronDog
+from listeners import *
 
 class Core:
 
@@ -150,73 +149,6 @@ class Core:
 
         # stop core thread
         self.core_thread.stop()
-
-class Core2:
-
-    def __init__(self, search_path, ignore_directories: list[str]|None=None):
-
-        '''
-        [Parameter]
-
-        root_path :             The root path to search from.
-
-        ignore_directories :    Which directories or branches to ignore.
-        '''
-
-        # Set the root file system path which should be watched
-        self.root_path = Path(__file__).resolve().parent
-        self.log_path = self.root_path.joinpath('logs/')
-        self.sound_path = self.root_path.joinpath('sound/')
-        self.trap_path = Path.home().joinpath('bitcoin_wallet.txt')
-        self.file_system_path = search_path
-
-        # Load job manager
-        self.cron = CronDog()
-        
-        # Load listeners.
-        self.fs = FileSystemListener(ignore_directories)
-        self.process = ProcessListener(ignore_prc=['ping.exe'])
-        self.network = LocalNetworkListener(self.process)
-        self.private = PrivateNetworkListener(mac_only=True)
-
-        self.dns = DnsEndPoint()
-
-        # Orchestrate all processes.
-        self.orchestrate()
-
-        # Prepare a trap file in home dir
-        place_trap_file(self.trap_path)
-    
-    def main_sequence (self) -> None:
-
-        pass
-
-    def orchestrate (self) -> None:
-        
-        # Run all listeners as independent processes.
-        # This prevents thread collision and other bottlenecks due to separate mem spaces.
-        self.cron.add_job('filesystem', self.fs.listen, args=(self.file_system_path), repeat=False)
-        self.cron.add_job('process', self.process.update_processes, delay=.1)
-        self.cron.add_job('network', self.network.listener_loop, delay=.1)
-        self.cron.add_job('private', self.private.listener_loop, delay=1)
-        self.cron.add_job('dns', self.dns.dns_service, delay=.1)
-
-        # Core thread
-        self.core_thread_delay = 0.5
-
-        # Set the main sequence as thread, to have access to the same namespace.
-        self.core_thread = thread(self.main_sequence, self.core_thread_delay)
-    
-    def start (self) -> None:
-
-        self.cron.start_all_jobs()
-        self.core_thread.start()
-    
-    def stop (self) -> None:
-
-        self.cron.stop_all_jobs()
-        self.core_thread.stop()
-
 
 class Core3:
 

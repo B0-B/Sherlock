@@ -234,12 +234,14 @@ def get_local_ips () -> list[str]:
     return NetworkScanner().scan_range()
 
 
-# Detect function using regex patterns
+# Detect using regex patterns
 # Define regex patterns
-ipv4_pattern = r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b"
-ipv6_pattern = r"\b(?:[0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}\b"
+# IPv4 pattern allowing ports but excluding time formats
+ipv4_pattern = r"\b(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9][0-9]?)(?::(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4}))?\b"
+# IPv6 pattern allowing ports but excluding time formats
+ipv6_pattern = r"\b(?:[0-9a-fA-F]{1,4}:(?!\d{1,2}:)){1,7}[0-9a-fA-F]{1,4}(?::(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4}))?\b"
 # Updated file path pattern supporting both Windows and Unix paths
-path_pattern = r"^(?:[A-Za-z][\\/]|/)[^\0]+([\\/][^\0]+)*$"
+path_pattern = r"^(?:[A-Za-z]:[\\/]|/)[^\0]+([\\/][^\0]+)*$"
 
 def detect_pattern (string: str) -> str:
 
